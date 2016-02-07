@@ -8,12 +8,16 @@ import java.util.Scanner;
 public class FileParser {
 
 	private File asm_file;
-	
-	
+	private ArrayList<String> fileContent;
 	
 	public void setFile(File file)
 	{
 		asm_file = file;
+	}
+	
+	public File getFile()
+	{
+		return asm_file;
 	}
 	
 	public String getFileName()
@@ -21,25 +25,43 @@ public class FileParser {
 		return asm_file.getName();
 	}
 	
-	//
+	public ArrayList<String> getFileContent()
+	{
+		return fileContent;
+	}
+	
+	// ----------------------------------------------------------- Constructor
 	
 	public FileParser(File file)
 	{
+		fileContent = new ArrayList<String>(); // initialize ArrayList
+		
 		this.setFile(file);
+		LinesToArrayList(); // convert each line in the file to a String and store in a list
 	}
 	
 	
 	// ----------------------------------------------------------- Local Methods
 	
-	private ArrayList LinesToArrayList(File file)
+	private void LinesToArrayList()
 	{
 		Scanner s;
-		ArrayList<String> list = new ArrayList<String>();
 		try 
 		{
+			
+			File file = getFile();
 			s = new Scanner(file);
+			
 			while (s.hasNextLine())
-			    list.add(s.nextLine());
+			{
+				String nextLine = s.nextLine();
+				
+				if (!nextLine.isEmpty() || !nextLine.equals("\n"))
+				{
+					fileContent.add(nextLine);
+				}
+			}
+				
 			s.close();
 		} 
 		catch (FileNotFoundException e) 
@@ -47,7 +69,22 @@ public class FileParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return list;
 	}
 	
+	
+	// ------------------------------------------------------------ Supporting Methods
+	public void PrintFileContent()
+	{
+		println(getFileName());
+		
+		for (int i = 0; i < fileContent.size(); i++)
+		{
+			println(fileContent.get(i));
+		}
+	}
+	
+	public static void println(Object line) 
+	{
+	    System.out.println(line);
+	}
 }
