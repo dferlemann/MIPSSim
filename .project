@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>example1.asm</name>
+			<type>1</type>
+			<location>C:/Users/david_000/Documents/MIPSSim/example1.asm</location>
+		</link>
+	</linkedResources>
 </projectDescription>
