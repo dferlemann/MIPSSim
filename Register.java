@@ -7,7 +7,7 @@ public class Register {
 	private HashMap<String, String> registers = new HashMap<String, String>();
 	private String hi, lo; // special registers: $hi, $lo
 	
-	// ============================================================================== Get/Sets
+	// ============================================================================== Properties
 	public String getHi()
 	{
 		return hi;
@@ -26,7 +26,7 @@ public class Register {
 		lo = val;
 	}
 	
-	// ============================================================================== Setup
+	// ============================================================================== Constructor
 	public void Register()
 	{
 		init();

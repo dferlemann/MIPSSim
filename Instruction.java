@@ -8,53 +8,62 @@ public class Instruction {
 	private HashMap<String, String> instrsFormat = new HashMap<String, String>();
 	
 	
+	// ============================================================================== Constructor
+	public Instruction()
+	{
+		
+	}
+	
 	private void init()
 	{
 		// -------------------------------------------- Initialize instructions 
-		// R-type (funts)
-		instrs.put("add",  "100000");
-		instrs.put("addu", "100001");
-        instrs.put("and",  "100100");
-        instrs.put("jr",   "001000");
-        instrs.put("nor",  "100111");
-        instrs.put("or",   "100101");
-        instrs.put("slt",  "101010");
-        instrs.put("sltu", "101011");
-        instrs.put("sll",  "000000");
-        instrs.put("srl",  "000010");
-        instrs.put("sub",  "100010");
-        instrs.put("subu", "100011");
+		// R-type (functs) - R-type use opcode 000000
+		instrs.put("add",  "100000"); // Addition
+		instrs.put("addu", "100001"); // Add unsigned
+        instrs.put("and",  "100100"); // Logical and
+        instrs.put("jr",   "001000"); // Jump Register
+        instrs.put("nor",  "100111"); // Logical nor
+        instrs.put("or",   "100101"); // logical or
+        instrs.put("slt",  "101010"); // Set less than
+        instrs.put("sltu", "101011"); // Set less than unsigned
+        instrs.put("sll",  "000000"); // Shift left logical
+        instrs.put("srl",  "000010"); // Shift right logical
+        instrs.put("sub",  "100010"); // Substract
+        instrs.put("subu", "100011"); // Substract unsigned
         
         // I-type (opcodes)
-        instrs.put("addi", "001000");
-        instrs.put("addiu","001001");
-        instrs.put("andi", "001100");
-        instrs.put("beq",  "000100");
-        instrs.put("bne",  "000101");
-        instrs.put("lbu",  "100100");
-        instrs.put("lhu",  "100101");
+        instrs.put("addi", "001000"); // Add immediate
+        instrs.put("addiu","001001"); // Add immediate unsigned
+        instrs.put("andi", "001100"); 
+        instrs.put("beq",  "000100"); // Branch if equal
+        instrs.put("bne",  "000101"); // branch if not equal
+        instrs.put("lbu",  "100100"); // Load byte unsigned
+        instrs.put("lhu",  "100101"); // Load half word unsigned
         instrs.put("ll",   "110000");
-        instrs.put("lui",  "001111");
-        instrs.put("lw",   "100011");
+        instrs.put("lui",  "001111"); // Load upper immediate
+        instrs.put("lw",   "100011"); // Load word
         instrs.put("ori",  "001101");
-        instrs.put("slti", "001010");
-        instrs.put("sltiu","001011");
-        instrs.put("sb",   "101000");
-        instrs.put("sc",   "111000");
-        instrs.put("sh",   "101001");
-        instrs.put("sw",   "101011");
+        instrs.put("slti", "001010"); // Set less than immediate
+        instrs.put("sltiu","001011"); // Set less than immediate unsigned
+        instrs.put("sb",   "101000"); // Store byte
+        instrs.put("sc",   "111000"); // Store conditional
+        instrs.put("sh",   "101001"); // Store halfword
+        instrs.put("sw",   "101011"); // Store word
 
         // J-type (opcodes)
-        instrs.put("j",    "000010");
-        instrs.put("jal",  "000011");
+        instrs.put("j",    "000010"); // Jump
+        instrs.put("jal",  "000011"); // Jump and Link
 		
-        // -------------------------------------------- Associate instrsuction Format
+        instrs.put("syscall", "001100");
+        
+        // -------------------------------------------- Associate instruction Format
         
 	}
 	
-	private interface instrParser 
+	
+	private interface instrFormat
 	{
-        String parse(String[] parts);
+        String format(String[] parts);
     }
 	
 	
