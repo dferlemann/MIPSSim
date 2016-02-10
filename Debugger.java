@@ -15,7 +15,7 @@ public class Debugger {
 			File file_input = new File(args[0]);
 			
 			FileParser fpars = new FileParser(file_input);
-			fpars.PrintFileContent();
+			fpars.PrintContent();
 		} 
 		else
 		{

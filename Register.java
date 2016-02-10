@@ -5,63 +5,89 @@ public class Register {
 
 	// Registers B_25-21, B_20-16, B_15-11 (5-bit)
 	private HashMap<String, String> registers = new HashMap<String, String>();
+	private String hi, lo; // special registers: $hi, $lo
 	
-	private void initialization()
+	// ============================================================================== Get/Sets
+	public String getHi()
 	{
-        // -------------------------------------------- Initialize Registers
+		return hi;
+	}
+	public void setHi(String val)
+	{
+		hi = val;
+	}
+	
+	public String getLo()
+	{
+		return lo;
+	}
+	public void setLo(String val)
+	{
+		lo = val;
+	}
+	
+	// ============================================================================== Setup
+	public void Register()
+	{
+		init();
+	}
+	
+	private void init()
+	{
+        // -------------------------------------------- Initialize Standard Registers
         
-        registers.put("$zero", "00000"); // Constant 0
-        registers.put("$at", "00001"); // Assembler Temporary
+        registers.put("$0", "00000"); // Constant 0
+        registers.put("$1", "00001"); // Assembler Temporary
 
-        // Function results & expression evaluation
-        registers.put("$v0", "00010");
-        registers.put("$v1", "00011");
+        // Function results & expression evaluation 		$v0 - $v1
+        registers.put("$2", "00010");
+        registers.put("$3", "00011");
 
-        // Arguments
-        registers.put("$a0", "00100");
-        registers.put("$a1", "00101");
-        registers.put("$a2", "00110");
-        registers.put("$a3", "00111");
+        // Arguments 										$a0 - $a3
+        registers.put("$4", "00100");
+        registers.put("$5", "00101");
+        registers.put("$6", "00110");
+        registers.put("$7", "00111");
 
-        // Temporaries
-        registers.put("$t0", "01000");
-        registers.put("$t1", "01001");
-        registers.put("$t2", "01010");
-        registers.put("$t3", "01011");
-        registers.put("$t4", "01100");
-        registers.put("$t5", "01101");
-        registers.put("$t6", "01110");
-        registers.put("$t7", "01111");
+        // Temporaries										$t0 - $t7
+        registers.put("$8", "01000");
+        registers.put("$9", "01001");
+        registers.put("$10", "01010");
+        registers.put("$11", "01011");
+        registers.put("$12", "01100");
+        registers.put("$13", "01101");
+        registers.put("$14", "01110");
+        registers.put("$15", "01111");
 
-        // Saved temporaries
-        registers.put("$s0", "10000");
-        registers.put("$s1", "10001");
-        registers.put("$s2", "10010");
-        registers.put("$s3", "10011");
-        registers.put("$s4", "10100");
-        registers.put("$s5", "10101");
-        registers.put("$s6", "10110");
-        registers.put("$s7", "10111");
+        // Saved temporaries								$s0 - $s7
+        registers.put("$16", "10000");
+        registers.put("$17", "10001");
+        registers.put("$18", "10010");
+        registers.put("$19", "10011");
+        registers.put("$20", "10100");
+        registers.put("$21", "10101");
+        registers.put("$22", "10110");
+        registers.put("$23", "10111");
 
-        // Temporaries
-        registers.put("$t8", "11000");
-        registers.put("$t9", "11001");
+        // Temporaries										$t8 - $t9
+        registers.put("$24", "11000");
+        registers.put("$25", "11001");
 
         // Reserved for OS Kernel
-        registers.put("$k0", "11010");
-        registers.put("$k1", "11011");
+        registers.put("$26", "11010"); // $k0
+        registers.put("$27", "11011"); // $k1
 
-        registers.put("$gp", "11100"); // Global pointer
-        registers.put("$sp", "11101"); // Stack pointer
-        registers.put("$fp", "11110"); // Frame pointer
-        registers.put("$ra", "11111"); // Return address
+        registers.put("$28", "11100"); // $gp - Global pointer
+        registers.put("$29", "11101"); // $sp - Stack pointer
+        registers.put("$30", "11110"); // $fp - Frame pointer
+        registers.put("$31", "11111"); // $ra - Return address
         
 	}
 	
     private String getRegister(String reg) {
         // Numeral address reference, e.g. $8
         if (reg.matches("[$]\\d+")) {
-            return parseUnsigned5BitBin(Integer.parseInt(reg.substring(1)));
+            //return parseUnsigned5BitBin(Integer.parseInt(reg.substring(1)));
         }
         // Standard reference, e.g. $t0
         return registers.get(reg);

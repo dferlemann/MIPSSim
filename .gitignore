@@ -4,3 +4,8 @@
 /TestGroup1.class
 /Instruction.class
 /Register.class
+/instrsuction.class
+/Instruction$instrParser.class
+/Memory.class
+/DebugExceptions.class
+/DebugException.class

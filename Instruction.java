@@ -4,53 +4,58 @@ import java.util.HashMap;
 public class Instruction {
 	
 	// Opcode B_31-26 (6-bit)
-	private HashMap<String, String> opcodes = new HashMap<String, String>();
-	private HashMap<String, String> instrFormat = new HashMap<String, String>();
+	private HashMap<String, String> instrs = new HashMap<String, String>();
+	private HashMap<String, String> instrsFormat = new HashMap<String, String>();
 	
 	
-	private void initialization()
+	private void init()
 	{
-		// -------------------------------------------- Initialize Instructions 
-		// R-type
-		opcodes.put("add",  "100000");
-		opcodes.put("addu", "100001");
-        opcodes.put("and",  "100100");
-        opcodes.put("jr",   "001000");
-        opcodes.put("nor",  "100111");
-        opcodes.put("or",   "100101");
-        opcodes.put("slt",  "101010");
-        opcodes.put("sltu", "101011");
-        opcodes.put("sll",  "000000");
-        opcodes.put("srl",  "000010");
-        opcodes.put("sub",  "100010");
-        opcodes.put("subu", "100011");
+		// -------------------------------------------- Initialize instructions 
+		// R-type (funts)
+		instrs.put("add",  "100000");
+		instrs.put("addu", "100001");
+        instrs.put("and",  "100100");
+        instrs.put("jr",   "001000");
+        instrs.put("nor",  "100111");
+        instrs.put("or",   "100101");
+        instrs.put("slt",  "101010");
+        instrs.put("sltu", "101011");
+        instrs.put("sll",  "000000");
+        instrs.put("srl",  "000010");
+        instrs.put("sub",  "100010");
+        instrs.put("subu", "100011");
         
-        // I-type
-        opcodes.put("addi", "001000");
-        opcodes.put("addiu","001001");
-        opcodes.put("andi", "001100");
-        opcodes.put("beq",  "000100");
-        opcodes.put("bne",  "000101");
-        opcodes.put("lbu",  "100100");
-        opcodes.put("lhu",  "100101");
-        opcodes.put("ll",   "110000");
-        opcodes.put("lui",  "001111");
-        opcodes.put("lw",   "100011");
-        opcodes.put("ori",  "001101");
-        opcodes.put("slti", "001010");
-        opcodes.put("sltiu","001011");
-        opcodes.put("sb",   "101000");
-        opcodes.put("sc",   "111000");
-        opcodes.put("sh",   "101001");
-        opcodes.put("sw",   "101011");
+        // I-type (opcodes)
+        instrs.put("addi", "001000");
+        instrs.put("addiu","001001");
+        instrs.put("andi", "001100");
+        instrs.put("beq",  "000100");
+        instrs.put("bne",  "000101");
+        instrs.put("lbu",  "100100");
+        instrs.put("lhu",  "100101");
+        instrs.put("ll",   "110000");
+        instrs.put("lui",  "001111");
+        instrs.put("lw",   "100011");
+        instrs.put("ori",  "001101");
+        instrs.put("slti", "001010");
+        instrs.put("sltiu","001011");
+        instrs.put("sb",   "101000");
+        instrs.put("sc",   "111000");
+        instrs.put("sh",   "101001");
+        instrs.put("sw",   "101011");
 
-        // J-type
-        opcodes.put("j",    "000010");
-        opcodes.put("jal",  "000011");
+        // J-type (opcodes)
+        instrs.put("j",    "000010");
+        instrs.put("jal",  "000011");
 		
-        // -------------------------------------------- Associate Instruction Format
-        
-        
+        // -------------------------------------------- Associate instrsuction Format
         
 	}
+	
+	private interface instrParser 
+	{
+        String parse(String[] parts);
+    }
+	
+	
 }
