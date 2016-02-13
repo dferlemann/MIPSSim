@@ -10,3 +10,11 @@
 /DebugExceptions.class
 /DebugException.class
 /Instruction$instrFormat.class
+/InstructionParser.class
+/MachineCodeParser.class
+/Instruction$1.class
+/Instruction$2.class
+/Instruction$3.class
+/Instruction$4.class
+/Simulater.class
+/Simulator.class

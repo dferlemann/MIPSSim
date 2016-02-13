@@ -183,16 +183,33 @@ public class FileParser {
 			}
 			else
 			{
-				if (line.length() != 8 && !line.matches("^[0-9A-F]+$"))
+				if (currentState == 1)
 				{
-					throw new DebugException("Error - data or instruction format is not correct!");
-				}
-				else
-				{
-					if (currentState == 1)
+					if (line.length() != 8 && !line.matches("[0-9a-fA-F]+"))
+					{
+						throw new DebugException("Error - instruction format is not correct!");
+					} 
+					else 
+					{
 						instrContent.add(line);
-					else if (currentState == 2)
-						dataContent.add(line);
+					}
+				}
+					
+				else if (currentState == 2)
+				{
+					String[] data_lines = line.split(",");
+					for(String data_line : data_lines)
+					{
+						if (data_line.length() != 2 && !data_line.matches("[0-9a-fA-F]+"))
+						{
+							throw new DebugException("Error - data format is not correct!");
+						} 
+						else 
+						{
+							dataContent.add(data_line);
+						}
+					}
+					
 				}
 			}
 		}
