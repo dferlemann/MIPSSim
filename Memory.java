@@ -5,8 +5,9 @@ public class Memory {
 	
 	private int space_low = 1048576; // 4MB
 	private int space_hi = 1048576; // 4MB
+	private CUtils ut = new CUtils();
 	
-	protected LinkedHashMap<Long, Long> mem = new LinkedHashMap<Long, Long>();
+	protected LinkedHashMap<Long, Byte> mem = new LinkedHashMap<Long, Byte>();
 	
 	public Memory()
 	{
@@ -17,7 +18,7 @@ public class Memory {
 	{
 		for(long addr = 0; addr < space_low; addr++)
 		{
-			mem.put(addr, (long)0);
+			mem.put(addr, (byte)0);
 		}
 		
 		
@@ -25,7 +26,8 @@ public class Memory {
 		
 		for(long addr = (highest_addr-space_hi); addr <= highest_addr; addr++ )
 		{
-			mem.put(addr, (long)0);
+			mem.put(addr, (byte)0);
 		}
 	}
+	
 }

@@ -1,20 +1,28 @@
 import java.util.HashMap;
 
 
-public class Instruction {
+public class Decode {
 	
 	// Opcode B_31-26 (6-bit)
 	private HashMap<String, String> instrsAssembly = new HashMap<String, String>();
-	private HashMap<String, instrFormat> instrsFormatMasks = new HashMap<String, instrFormat>();
+	private HashMap<String, String> instrsType = new HashMap<String, String>();
+	private HashMap<String, InstructionFormat> instrsFormatMasks = new HashMap<String, InstructionFormat>();
 	
 	// ============================================================================== Properties
 	public HashMap<String, String> getInstrs()
 	{
 		return instrsAssembly;
 	}
-	
+	public HashMap<String, InstructionFormat> GetInstrsFormatMasks()
+	{
+		return instrsFormatMasks;
+	}
+	public HashMap<String, String> GetInstrsTypes()
+	{
+		return instrsType;
+	}
 	// ============================================================================== Constructor
-	public Instruction()
+	public Decode()
 	{
 		init();
 	}
@@ -61,6 +69,51 @@ public class Instruction {
 		
         instrsAssembly.put("syscall", "001100");
         
+        // -------------------------------------------- Associate instruction Type
+        // Loads
+        instrsType.put("lw",   "load"); // Load word
+		instrsType.put("lhu",  "load"); // Load half word unsigned
+		instrsType.put("lbu",  "load"); // Load byte unsigned
+		instrsType.put("lui",  "load"); // Load upper immediate
+		instrsType.put("ll",   "load");
+        
+        // Stores
+		instrsType.put("sb",   "store"); // Store byte
+		instrsType.put("sc",   "store"); // Store conditional
+		instrsType.put("sh",   "store"); // Store halfword
+		instrsType.put("sw",   "store"); // Store word
+		
+        // Logical
+		instrsType.put("and",  "logical"); // Logical and
+		instrsType.put("andi", "logical"); 
+		instrsType.put("nor",  "logical"); // Logical nor
+		instrsType.put("or",   "logical"); // logical or
+		instrsType.put("ori",  "logical"); 
+		instrsType.put("slt",  "logical"); // Set less than
+		instrsType.put("sltu", "logical"); // Set less than unsigned
+		instrsType.put("slti", "logical"); // Set less than immediate
+		instrsType.put("sltiu","logical"); // Set less than immediate unsigned
+		instrsType.put("sll",  "logical"); // Shift left logical
+		instrsType.put("srl",  "logical"); // Shift right logical
+		
+        // Arithmetic
+
+		instrsType.put("add",  "arithmetic"); // Addition
+		instrsType.put("addi", "arithmetic"); // Add immediate
+		instrsType.put("addiu","arithmetic"); // Add immediate unsigned
+		instrsType.put("addu", "arithmetic"); // Add unsigned
+		instrsType.put("sub",  "arithmetic"); // Substract
+		instrsType.put("subu", "arithmetic"); // Substract unsigned
+        
+		// Control
+		instrsType.put("j",    "control"); // Jump
+		instrsType.put("jal",  "control"); // Jump and Link
+		instrsType.put("jr",   "control"); // Jump Register
+		instrsType.put("beq",  "control"); // Branch if equal
+		instrsType.put("bne",  "control"); // branch if not equal
+
+		instrsType.put("syscall", "syscall");
+        
         // -------------------------------------------- Associate instruction Format
         
 		instrsFormatMasks.put("add",  instr_r); // Addition
@@ -100,61 +153,73 @@ public class Instruction {
         instrsFormatMasks.put("jal",  instr_j); // Jump and Link
 		
         instrsFormatMasks.put("syscall", instr_syscall);
+        
 	}
 	
 	// ======================================================================= Instruction Format Masks
+
 	
-	private interface instrFormat
-	{
-		HashMap<String, String> format(String parts);
-    }
-	
-	private instrFormat instr_r = new instrFormat() 
+	private InstructionFormat instr_r = new InstructionFormat() 
 	{
 		public HashMap<String, String> format(String parts)
 		{
 			HashMap<String, String> fields = new HashMap<String, String>();
 			
 			fields.put("opcode", "000000");
-			fields.put("rs", parts.substring(6, 10));
-			fields.put("rt", parts.substring(11, 15));
-			fields.put("rd", parts.substring(16, 20));
-			fields.put("sa", parts.substring(21, 25));
-			fields.put("funct", parts.substring(26, 31));
+			fields.put("rs", parts.substring(6, 11));
+			fields.put("rt", parts.substring(11, 16));
+			fields.put("rd", parts.substring(16, 21));
+			fields.put("sa", parts.substring(21, 26));
+			fields.put("funct", parts.substring(26, 32));
 			
 			return fields;
 		}
 	};
 	
-	private instrFormat instr_i = new instrFormat() 
+	private InstructionFormat instr_i = new InstructionFormat() 
 	{
 		public HashMap<String, String> format(String parts)
 		{
 			HashMap<String, String> fields = new HashMap<String, String>();
 			
-			fields.put("opcode", parts.substring(0, 5));
-			fields.put("rs", parts.substring(6, 10));
-			fields.put("rt", parts.substring(11, 15));
-			fields.put("const", parts.substring(16, 31));
+			fields.put("opcode", parts.substring(0, 6));
+			fields.put("rs", parts.substring(6, 11));
+			fields.put("rt", parts.substring(11, 16));
+			fields.put("const", parts.substring(16, 32));
 			
 			return fields;
 		}
 	};
 	
-	private instrFormat instr_j = new instrFormat() 
+	private InstructionFormat instr_j = new InstructionFormat() 
 	{
 		public HashMap<String, String> format(String parts)
 		{
 			HashMap<String, String> fields = new HashMap<String, String>();
 			
-			fields.put("opcode", parts.substring(0, 5));
-			fields.put("target", parts.substring(6, 31));
+			fields.put("opcode", parts.substring(0, 6));
+			fields.put("target", parts.substring(6, 32));
 			
 			return fields;
 		}
 	};
 	
-	private instrFormat instr_syscall = new instrFormat() 
+	private InstructionFormat instr_fi = new InstructionFormat() 
+	{
+		public HashMap<String, String> format(String parts)
+		{
+			HashMap<String, String> fields = new HashMap<String, String>();
+			
+			fields.put("opcode", parts.substring(0, 6));
+			fields.put("fmt", parts.substring(6, 11));
+			fields.put("ft", parts.substring(11, 16));
+			fields.put("const", parts.substring(16, 32));
+			
+			return fields;
+		}
+	};
+	
+	private InstructionFormat instr_syscall = new InstructionFormat() 
 	{
 		public HashMap<String, String> format(String parts)
 		{
@@ -162,10 +227,12 @@ public class Instruction {
 			
 			fields.put("opcode", "000000");
 			fields.put("code", "00000000000000000000");
-			fields.put("funct", parts.substring(6, 31));
+			fields.put("funct", parts.substring(6, 32));
 			
 			return fields;
 		}
 	};
+	
+	
 	
 }

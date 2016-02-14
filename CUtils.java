@@ -24,6 +24,29 @@ public class CUtils {
 		return Integer.toString(decimal, 2);
 	}
 	
+	public String binStr32ToHexString(String bin)
+	{
+		Long temp = Long.parseLong(bin, 2);
+		return String.format("%8s", Long.toHexString(temp)).replace(' ', '0');
+	}
+	
+    // Returns signed 16-bit binary string from int
+    public String intToSigned16Bin(int dec) 
+    {
+        String bin = Integer.toBinaryString(dec);
+
+        int l = bin.length();
+        if (l < 16 && dec >= 0) {
+            for (int i = 0; i < (16 - l); i++) {
+                bin = "0" + bin;
+            }
+        } else if (dec < 0) {
+            bin = bin.substring(l - 16);
+        }
+
+        return bin;
+    }
+	
 	public <T, E> T getKeyByValue(Map<T, E> map, E value) 
 	{
 	    for (Entry<T, E> entry : map.entrySet()) 

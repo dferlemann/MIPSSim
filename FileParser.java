@@ -98,7 +98,8 @@ public class FileParser {
 			while (s.hasNextLine())
 			{
 				String nextLine = s.nextLine();
-				nextLine.trim(); // remove leading and trailing whitespaces
+				nextLine = nextLine.split("#")[0]; // remove comments
+				nextLine = nextLine.trim(); // remove leading and trailing whitespaces
 				
 				if (!(nextLine.length() == 0))
 				{
