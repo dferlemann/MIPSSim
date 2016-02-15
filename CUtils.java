@@ -26,7 +26,7 @@ public class CUtils {
 	
 	public String binStr32ToHexString(String bin)
 	{
-		Long temp = Long.parseLong(bin, 2);
+		Long temp = Long.parseLong(bin, 2); //bin.substring(bin.length()-32, bin.length())
 		return String.format("%8s", Long.toHexString(temp)).replace(' ', '0');
 	}
 	

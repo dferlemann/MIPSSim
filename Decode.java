@@ -43,6 +43,18 @@ public class Decode {
 		instrsAssembly.put("srl",  "000010"); // Shift right logical
 		instrsAssembly.put("sub",  "100010"); // Substract
 		instrsAssembly.put("subu", "100011"); // Substract unsigned
+		
+		instrsAssembly.put("sra",  "000011");
+		instrsAssembly.put("srav", "arithmetic");
+		instrsAssembly.put("div",  "arithmetic");
+		instrsAssembly.put("divu", "arithmetic");
+		instrsAssembly.put("mult", "arithmetic");
+		instrsAssembly.put("multu","arithmetic");		
+		instrsAssembly.put("mfhi", "010000");
+		instrsAssembly.put("mflo", "010010");
+		instrsAssembly.put("mthi", "arithmetic");
+		instrsAssembly.put("mtlo", "arithmetic");
+		
         
         // I-type (opcodes)
 		instrsAssembly.put("addi", "001000"); // Add immediate
@@ -104,6 +116,17 @@ public class Decode {
 		instrsType.put("addu", "arithmetic"); // Add unsigned
 		instrsType.put("sub",  "arithmetic"); // Substract
 		instrsType.put("subu", "arithmetic"); // Substract unsigned
+		
+		instrsType.put("sra",  "arithmetic");
+		instrsType.put("srav", "arithmetic");
+		instrsType.put("div",  "arithmetic");
+		instrsType.put("divu", "arithmetic");
+		instrsType.put("mult", "arithmetic");
+		instrsType.put("multu","arithmetic");		
+		instrsType.put("mfhi", "arithmetic");
+		instrsType.put("mflo", "arithmetic");
+		instrsType.put("mthi", "arithmetic");
+		instrsType.put("mtlo", "arithmetic");
         
 		// Control
 		instrsType.put("j",    "control"); // Jump
