@@ -4,14 +4,19 @@ import java.util.HashMap;
 public class Decode {
 	
 	// Opcode B_31-26 (6-bit)
-	private HashMap<String, String> instrsAssembly = new HashMap<String, String>();
+	private HashMap<String, String> instrsAsmOpcode = new HashMap<String, String>();
+	private HashMap<String, String> instrsAsmFunct = new HashMap<String, String>();
 	private HashMap<String, String> instrsType = new HashMap<String, String>();
 	private HashMap<String, InstructionFormat> instrsFormatMasks = new HashMap<String, InstructionFormat>();
 	
 	// ============================================================================== Properties
-	public HashMap<String, String> getInstrs()
+	public HashMap<String, String> getInstrsAsmOpcode()
 	{
-		return instrsAssembly;
+		return instrsAsmOpcode;
+	}
+	public HashMap<String, String> getInstrsAsmFunct()
+	{
+		return instrsAsmFunct;
 	}
 	public HashMap<String, InstructionFormat> GetInstrsFormatMasks()
 	{
@@ -31,63 +36,72 @@ public class Decode {
 	{
 		// -------------------------------------------- Initialize instructions 
 		// R-type (functs) - R-type use opcode 000000
-		instrsAssembly.put("add",  "100000"); // Addition
-		instrsAssembly.put("addu", "100001"); // Add unsigned
-		instrsAssembly.put("and",  "100100"); // Logical and
-		instrsAssembly.put("jr",   "001000"); // Jump Register
-		instrsAssembly.put("nor",  "100111"); // Logical nor
-		instrsAssembly.put("or",   "100101"); // logical or
-		instrsAssembly.put("slt",  "101010"); // Set less than
-		instrsAssembly.put("sltu", "101011"); // Set less than unsigned
-		instrsAssembly.put("sll",  "000000"); // Shift left logical
-		instrsAssembly.put("srl",  "000010"); // Shift right logical
-		instrsAssembly.put("sub",  "100010"); // Substract
-		instrsAssembly.put("subu", "100011"); // Substract unsigned
+		instrsAsmFunct.put("add",  "100000"); // Addition
+		instrsAsmFunct.put("addu", "100001"); // Add unsigned
+		instrsAsmFunct.put("and",  "100100"); // Logical and
+		instrsAsmFunct.put("jr",   "001000"); // Jump Register
+		instrsAsmFunct.put("nor",  "100111"); // Logical nor
+		instrsAsmFunct.put("or",   "100101"); // logical or
+		instrsAsmFunct.put("slt",  "101010"); // Set less than
+		instrsAsmFunct.put("sltu", "101011"); // Set less than unsigned
+		instrsAsmFunct.put("sll",  "000000"); // Shift left logical
+		instrsAsmFunct.put("srl",  "000010"); // Shift right logical
+		instrsAsmFunct.put("sub",  "100010"); // Substract
+		instrsAsmFunct.put("subu", "100011"); // Substract unsigned
 		
-		instrsAssembly.put("sra",  "000011");
-		instrsAssembly.put("srav", "arithmetic");
-		instrsAssembly.put("div",  "arithmetic");
-		instrsAssembly.put("divu", "arithmetic");
-		instrsAssembly.put("mult", "arithmetic");
-		instrsAssembly.put("multu","arithmetic");		
-		instrsAssembly.put("mfhi", "010000");
-		instrsAssembly.put("mflo", "010010");
-		instrsAssembly.put("mthi", "arithmetic");
-		instrsAssembly.put("mtlo", "arithmetic");
+		instrsAsmFunct.put("sra",  "000011");
+		instrsAsmFunct.put("srav", "000111");
+		instrsAsmFunct.put("div",  "011010");
+		instrsAsmFunct.put("divu", "011011");
+		instrsAsmFunct.put("mult", "011000");
+		instrsAsmFunct.put("multu","011001");		
+		instrsAsmFunct.put("mfhi", "010000");
+		instrsAsmFunct.put("mflo", "010010");
+		instrsAsmFunct.put("mthi", "010001");
+		instrsAsmFunct.put("mtlo", "010011");
 		
-        
+		instrsAsmFunct.put("xor",  "100110");
+		
+		
+		instrsAsmFunct.put("syscall", "001100");
+		
         // I-type (opcodes)
-		instrsAssembly.put("addi", "001000"); // Add immediate
-		instrsAssembly.put("addiu","001001"); // Add immediate unsigned
-		instrsAssembly.put("andi", "001100"); 
-        instrsAssembly.put("beq",  "000100"); // Branch if equal
-        instrsAssembly.put("bne",  "000101"); // branch if not equal
-        instrsAssembly.put("lbu",  "100100"); // Load byte unsigned
-        instrsAssembly.put("lhu",  "100101"); // Load half word unsigned
-        instrsAssembly.put("ll",   "110000");
-        instrsAssembly.put("lui",  "001111"); // Load upper immediate
-        instrsAssembly.put("lw",   "100011"); // Load word
-        instrsAssembly.put("ori",  "001101");
-        instrsAssembly.put("slti", "001010"); // Set less than immediate
-        instrsAssembly.put("sltiu","001011"); // Set less than immediate unsigned
-        instrsAssembly.put("sb",   "101000"); // Store byte
-        instrsAssembly.put("sc",   "111000"); // Store conditional
-        instrsAssembly.put("sh",   "101001"); // Store halfword
-        instrsAssembly.put("sw",   "101011"); // Store word
+		instrsAsmOpcode.put("addi", "001000"); // Add immediate
+		instrsAsmOpcode.put("addiu","001001"); // Add immediate unsigned
+		instrsAsmOpcode.put("andi", "001100"); 
+		instrsAsmOpcode.put("beq",  "000100"); // Branch if equal
+		instrsAsmOpcode.put("bne",  "000101"); // branch if not equal
+		instrsAsmOpcode.put("lbu",  "100100"); // Load byte unsigned
+		instrsAsmOpcode.put("lhu",  "100101"); // Load half word unsigned
+		instrsAsmOpcode.put("ll",   "110000");
+		instrsAsmOpcode.put("lui",  "001111"); // Load upper immediate
+		instrsAsmOpcode.put("lw",   "100011"); // Load word
+		instrsAsmOpcode.put("ori",  "001101");
+		instrsAsmOpcode.put("slti", "001010"); // Set less than immediate
+		instrsAsmOpcode.put("sltiu","001011"); // Set less than immediate unsigned
+		instrsAsmOpcode.put("sb",   "101000"); // Store byte
+		instrsAsmOpcode.put("sc",   "111000"); // Store conditional
+		instrsAsmOpcode.put("sh",   "101001"); // Store halfword
+		instrsAsmOpcode.put("sw",   "101011"); // Store word
 
-        // J-type (opcodes)
-        instrsAssembly.put("j",    "000010"); // Jump
-        instrsAssembly.put("jal",  "000011"); // Jump and Link
+		instrsAsmOpcode.put("lh",   "100001");
+		instrsAsmOpcode.put("lb",   "100000");
 		
-        instrsAssembly.put("syscall", "001100");
+        // J-type (opcodes)
+		instrsAsmOpcode.put("j",    "000010"); // Jump
+		instrsAsmOpcode.put("jal",  "000011"); // Jump and Link
+		
         
-        // -------------------------------------------- Associate instruction Type
+        // ----------------------------------------------------------------- Associate instruction Type
         // Loads
         instrsType.put("lw",   "load"); // Load word
 		instrsType.put("lhu",  "load"); // Load half word unsigned
 		instrsType.put("lbu",  "load"); // Load byte unsigned
 		instrsType.put("lui",  "load"); // Load upper immediate
 		instrsType.put("ll",   "load");
+		
+		instrsType.put("lh",   "load");
+		instrsType.put("lb",   "load");
         
         // Stores
 		instrsType.put("sb",   "store"); // Store byte
@@ -127,6 +141,8 @@ public class Decode {
 		instrsType.put("mflo", "arithmetic");
 		instrsType.put("mthi", "arithmetic");
 		instrsType.put("mtlo", "arithmetic");
+		
+		instrsType.put("xor",  "arithmetic");
         
 		// Control
 		instrsType.put("j",    "control"); // Jump
@@ -135,9 +151,9 @@ public class Decode {
 		instrsType.put("beq",  "control"); // Branch if equal
 		instrsType.put("bne",  "control"); // branch if not equal
 
-		instrsType.put("syscall", "syscall");
+		instrsType.put("syscall", "interrupt");
         
-        // -------------------------------------------- Associate instruction Format
+        // ------------------------------------------------------------------- Associate instruction Format
         
 		instrsFormatMasks.put("add",  instr_r); // Addition
 		instrsFormatMasks.put("addu", instr_r); // Add unsigned
@@ -151,7 +167,21 @@ public class Decode {
         instrsFormatMasks.put("srl",  instr_r); // Shift right logical
         instrsFormatMasks.put("sub",  instr_r); // Substract
         instrsFormatMasks.put("subu", instr_r); // Substract unsigned
+
         
+        instrsFormatMasks.put("sra",  instr_r);
+        instrsFormatMasks.put("srav", instr_r);
+        instrsFormatMasks.put("div",  instr_r);
+        instrsFormatMasks.put("divu", instr_r);
+        instrsFormatMasks.put("mult", instr_r);
+        instrsFormatMasks.put("multu",instr_r);		
+        instrsFormatMasks.put("mfhi", instr_r);
+        instrsFormatMasks.put("mflo", instr_r);
+        instrsFormatMasks.put("mthi", instr_r);
+        instrsFormatMasks.put("mtlo", instr_r);
+		
+        instrsFormatMasks.put("xor",  instr_r);
+		
         // I-type (opcodes)
         instrsFormatMasks.put("addi", instr_i); // Add immediate
         instrsFormatMasks.put("addiu",instr_i); // Add immediate unsigned
@@ -170,6 +200,9 @@ public class Decode {
         instrsFormatMasks.put("sc",   instr_i); // Store conditional
         instrsFormatMasks.put("sh",   instr_i); // Store halfword
         instrsFormatMasks.put("sw",   instr_i); // Store word
+        
+        instrsFormatMasks.put("lh",   instr_i);
+        instrsFormatMasks.put("lb",   instr_i);
 
         // J-type (opcodes)
         instrsFormatMasks.put("j",    instr_j); // Jump

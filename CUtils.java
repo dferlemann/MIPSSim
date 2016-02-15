@@ -18,10 +18,13 @@ public class CUtils {
 		return Integer.toString(decimal, 16);
 	}
 	
-	public String hex2binary(String hexStr)
+	public String hex2binStr32(String hexStr)
 	{
-		int decimal = Integer.parseInt(hexStr, 16);
-		return Integer.toString(decimal, 2);
+		long decimal = Long.parseLong(hexStr, 16);
+		String binStr = String.format("%32s", Long.toBinaryString(decimal)).replace(' ', '0');
+		//println("Binary String: " + binStr);
+		
+		return binStr;//String.format("%1$-32s", Integer.toString(decimal, 2));
 	}
 	
 	public String binStr32ToHexString(String bin)
@@ -45,6 +48,11 @@ public class CUtils {
         }
 
         return bin;
+    }
+    
+    public int binStr16toSignedInt(String binStr16)
+    {
+    	return (short)Integer.parseInt(binStr16, 2);
     }
 	
 	public <T, E> T getKeyByValue(Map<T, E> map, E value) 

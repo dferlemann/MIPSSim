@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 public class Simulator 
 {
-	public boolean DEV_MODE = false;
+	public boolean DEV_MODE = true;
 	
 	FileParser filep;
 	private Memory m;
@@ -24,7 +24,8 @@ public class Simulator
 
 	
 	HashMap<String,InstructionFormat> instrsFmt;
-	HashMap<String, String> instrsAsm, // assembly names
+	HashMap<String, String> instrsAsmOpcode, // assembly names
+							instrsAsmFunct,
 							currentInstrFields,
 							instrsType; 
 	
@@ -78,7 +79,8 @@ public class Simulator
 		
 		
 		// Have decoding information ready
-		instrsAsm = decoder.getInstrs();
+		instrsAsmOpcode = decoder.getInstrsAsmOpcode();
+		instrsAsmFunct = decoder.getInstrsAsmFunct();
 		instrsFmt = decoder.GetInstrsFormatMasks();
 		instrsType = decoder.GetInstrsTypes();
 		currentInstrFields = new HashMap<String, String>();
@@ -97,8 +99,34 @@ public class Simulator
 			// -- step 2: get opcode
 			String opcode = currentInstr_bin.substring(0, 6);
 			
+			if(DEV_MODE) 
+			{
+				ut.println("============ INSTR #" + instr_num + " =============================");
+				ut.println("PC=" + String.format("%8s", Long.toHexString(pc)).replace(' ', '0'));
+				ut.println("INSTR_HEX=" + nextInstruction);
+				ut.println("INSTR_BIN=" + currentInstr_bin);
+			}
+			
+			
 			// -- step 3: get ISR format of current instruction
-			currentInstrAsmName = ut.getKeyByValue(instrsAsm, opcode);
+			if (Integer.parseInt(opcode) == 0)
+			{
+				String funct = currentInstr_bin.substring(26, 32);
+				currentInstrAsmName = ut.getKeyByValue(instrsAsmFunct, funct);
+				if(DEV_MODE) 
+				{
+					ut.println("Opcode: 000000    Funct: " + currentInstr_bin + "    ASM: " + currentInstrAsmName);
+				}
+			} 
+			else
+			{
+				currentInstrAsmName = ut.getKeyByValue(instrsAsmOpcode, opcode);
+				if(DEV_MODE) 
+				{
+					ut.println("Opcode: " + currentInstr_bin.substring(0, 6) + "    ASM: " + currentInstrAsmName);
+				}
+			}
+			//ut.println(currentInstr_bin);
 			InstructionFormat currentFmt = instrsFmt.get(currentInstrAsmName);
 			currentInstrFields = currentFmt.format(currentInstr_bin);
 			
@@ -110,8 +138,7 @@ public class Simulator
 				// numInstrExecuted       numClkCyclesUsed          numInstructions_load  
 				// numInstructions_store  numInstructions_logical   numInstructions_arithmetic   numInstructions_control
 				
-				if (DEV_MODE == true) 
-					printEverything();
+				
 				
 				switch(instrsType.get(currentInstrAsmName))
 				{
@@ -125,6 +152,13 @@ public class Simulator
 				}
 				
 				executeInstruction();
+				
+				if (DEV_MODE == true) 
+				{
+					ut.println("\nRegister Content: -------------------------------\n ");
+					reg.printAllRegisters();
+				}
+					
 			} 
 			catch (DebugException ex)
 			{
@@ -201,7 +235,7 @@ public class Simulator
 	private String hex2binaryInstruction(String instr_hex)
 	{
 		String binary;
-		binary = ut.hex2binary(instr_hex);
+		binary = ut.hex2binStr32(instr_hex);
 		if (binary.length() != 32)
 			binary = String.format("%32s", binary).replace(' ', '0');
 		return binary;
@@ -246,7 +280,9 @@ public class Simulator
 			case "beq": 	beq(); numClkCyclesUsed += 1; break;
 			case "bne":   	bne(); numClkCyclesUsed += 1; break;
 			case "lbu":   	lbu(); numClkCyclesUsed += 1; break;
+			case "lb":   	 lb(); numClkCyclesUsed += 1; break;
 			case "lhu": 	lhu(); numClkCyclesUsed += 1; break;
+			case "lh":		 lh(); numClkCyclesUsed += 1; break;
 			case "ll":   	 ll(); numClkCyclesUsed += 1; break;
 			case "lui":   	lui(); numClkCyclesUsed += 3; break;
 			case "lw": 		 lw(); numClkCyclesUsed += 1; break;
@@ -283,7 +319,9 @@ public class Simulator
 	
 	private void printMetrics()
 	{
+		ut.println("=====================================================================");
 		ut.println("===================== Execution Complete ============================");
+		ut.println("=====================================================================");
 		
 		ut.println("Number of instructions executed:   " + numInstrExecuted);
 		ut.println("Number of clock cycles used:       " + numClkCyclesUsed);
@@ -296,6 +334,8 @@ public class Simulator
 		ut.println("Register Content: ---------------------------------------------------");
 		reg.printAllRegisters();
 		ut.println("=====================================================================");
+		ut.println("=====================================================================");
+		ut.println("=====================================================================");
 	}
 	
 	// ========================================================== Support 	
@@ -304,7 +344,7 @@ public class Simulator
 
 	private long rt, rs, rd;
 	private long target;
-	private short immedi, sa;
+	private short immedi_unsigned, immedi_signed, sa;
 	
 	private void loadRType()
 	{
@@ -338,14 +378,15 @@ public class Simulator
 		
 		rt = Long.parseLong(reg.getRegValByBin(rtStr), 2) & 0xffffffff;
 		rs = Long.parseLong(reg.getRegValByBin(rsStr), 2) & 0xffffffff;
-		immedi = (short)Integer.parseInt(constStr, 2);
+		immedi_unsigned = (short)Integer.parseInt(constStr, 2);
+		immedi_signed = (short)ut.binStr16toSignedInt(constStr);
 		
 		if (DEV_MODE == true)
 		{
 			ut.println("Opcode=" + currentInstrAsmName + 
 					", Rs->" + reg.getRegByBin(rsStr) + 
 					", Rt->" + reg.getRegByBin(rtStr) + 
-					", const->" + Integer.parseInt(constStr, 2));
+					", const->0b" + constStr);
 		}
 	}
 	private void loadJType()
@@ -366,14 +407,6 @@ public class Simulator
 	}
 	
 
-	private void printEverything()
-	{
-		ut.println("============ INSTR #" + instr_num + " =============================");
-		ut.println("PC=" + String.format("%8s", Long.toHexString(pc)).replace(' ', '0'));
-		ut.println("Instruction=" + nextInstruction);
-		
-		reg.printAllRegisters();
-	}
 	
 
 	// =============================================================================================== Instruction Functions
@@ -382,42 +415,57 @@ public class Simulator
 	private void ll() 
 	{
 		loadIType();
-		rt = rs + immedi;
+		rt = rs + immedi_unsigned;
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
 	private void lw() 
 	{
 		loadIType();
-		rt = rs + immedi;
+		long effectiveMemoryAddress = rs + immedi_signed;
+		rt = ((int)m.mem.get(effectiveMemoryAddress) << 24)+
+			 ((int)m.mem.get(effectiveMemoryAddress+1) << 16)+
+			 ((int)m.mem.get(effectiveMemoryAddress+2) << 8)+
+			 ((int)m.mem.get(effectiveMemoryAddress+3));
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}	
 	private void lhu() 
 	{
 		loadIType();
-		rt = (rs + immedi) & 0xffffl;
-		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
+		long effectiveMemoryAddress = rs + immedi_signed;
+		rt = ((int)m.mem.get(effectiveMemoryAddress) << 8)+
+			 ((int)m.mem.get(effectiveMemoryAddress+1));
+		reg.setRegValByBin(rtStr, longToBinStr32Len(rt & 0x0000ffff));
 		pc += 4;
 	}	
 	private void lh() 
 	{
 		loadIType();
-		rt = (rs + immedi) & 0xffffl;
+		long effectiveMemoryAddress = rs + immedi_signed;
+		if (m.mem.get(effectiveMemoryAddress) > 127)
+			rt = ((int)m.mem.get(effectiveMemoryAddress) << 8) + ((int)m.mem.get(effectiveMemoryAddress+1)) | 0xffff0000l;
+		else 
+			rt = ((int)m.mem.get(effectiveMemoryAddress) << 8) + ((int)m.mem.get(effectiveMemoryAddress+1));
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
 	private void lbu() 
 	{
 		loadIType();
-		rt = (rs + immedi) & 0xffl;
-		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
+		long effectiveMemoryAddress = rs + immedi_signed;
+		rt = m.mem.get(effectiveMemoryAddress);
+		reg.setRegValByBin(rtStr, longToBinStr32Len(rt & 0x000000ffl));
 		pc += 4;
 	}	
 	private void lb() 
 	{
 		loadIType();
-		rt = rs + immedi;
+		long effectiveMemoryAddress = rs + immedi_signed;
+		if (m.mem.get(effectiveMemoryAddress) > 127)
+			rt = ((int)m.mem.get(effectiveMemoryAddress)) | 0xffff0000l;
+		else 
+			rt = ((int)m.mem.get(effectiveMemoryAddress));
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
@@ -427,19 +475,12 @@ public class Simulator
 		// the upper halfword of register Rd. The lower bits 
 		// of the register are set to 0.
 		loadIType();
-		long lower_hw_imm = (immedi & 0x0000ffff) << 16;
-		short lower_hw_rt = (short)(rt & 0x0000ffffl);
-		long load = lower_hw_imm + lower_hw_rt;
-		rt = m.mem.get(load);
+		long lower_hw_imm = (immedi_signed & 0x0000ffff) << 16;
+		ut.println("lower half word of imm = " + lower_hw_imm);
+		rt = lower_hw_imm & 0xffff0000;
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}	
-	private void li() 
-	{
-		loadRType();
-		
-		pc += 4;
-	}
 	
 	// ---------------------------------------------------------------------------------------- Stores
 	private void sb() 
@@ -447,7 +488,7 @@ public class Simulator
 		// Store the least significant byte of register Rt into memory address Rs + imm.
 		loadIType();
 		byte ls_rt = (byte)(rt & 0xffl);
-		long store = rs + immedi;
+		long store = rs + immedi_unsigned;
 		m.mem.put(store, ls_rt);
 		pc += 4;
 	}
@@ -459,7 +500,7 @@ public class Simulator
 		byte ls_rt2 = (byte)(rt & 0x00ff0000l);
 		byte ls_rt3 = (byte)(rt & 0x0000ff00l);
 		byte ls_rt4 = (byte)(rt & 0x000000ffl);
-		long store = rs + immedi;
+		long store = rs + immedi_unsigned;
 		m.mem.put(store,   ls_rt1);
 		m.mem.put(store+1, ls_rt2);
 		m.mem.put(store+2, ls_rt3);
@@ -479,7 +520,7 @@ public class Simulator
 		byte ls_rt6 = (byte)(rt & 0x0000000000ff0000l);
 		byte ls_rt7 = (byte)(rt & 0x000000000000ff00l);
 		byte ls_rt8 = (byte)(rt & 0x00000000000000ffl);
-		long store = rs + immedi;
+		long store = rs + immedi_unsigned;
 		m.mem.put(store,   ls_rt1);
 		m.mem.put(store+1, ls_rt2);
 		m.mem.put(store+2, ls_rt3);
@@ -503,7 +544,7 @@ public class Simulator
 		byte ls_rt6 = (byte)(rt & 0x0000000000ff0000l);
 		byte ls_rt7 = (byte)(rt & 0x000000000000ff00l);
 		byte ls_rt8 = (byte)(rt & 0x00000000000000ffl);
-		long store = rs + immedi;
+		long store = rs + immedi_unsigned;
 		m.mem.put(store,   ls_rt1);
 		m.mem.put(store+1, ls_rt2);
 		m.mem.put(store+2, ls_rt3);
@@ -525,7 +566,7 @@ public class Simulator
 	private void andi() 
 	{
 		loadIType();
-		rt = rs & immedi;
+		rt = rs & immedi_unsigned;
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
@@ -546,7 +587,7 @@ public class Simulator
 	private void ori()
 	{
 		loadIType();
-		rt = rs | immedi;
+		rt = rs | immedi_unsigned;
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
@@ -579,14 +620,14 @@ public class Simulator
 	private void slti() 
 	{
 		loadIType();
-		rd = rs < immedi ? 1 : 0;
+		rd = rs < immedi_unsigned ? 1 : 0;
 		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc += 4;
 	}
 	private void sltiu() 
 	{
 		loadIType();
-		rd = rs < immedi ? 1 : 0;
+		rd = rs < immedi_unsigned ? 1 : 0;
 		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc += 4;
 	}
@@ -628,21 +669,22 @@ public class Simulator
 	private void addi() 
 	{
 		loadIType();
-		rt = rs + immedi;
+		rt = rs + immedi_signed;
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
 	private void addiu() 
 	{
-		loadRType();
-		rd = rs + rt;
-		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
+		loadIType();
+		rt = rs + immedi_signed;
+		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
 	private void addu() 
 	{
 		loadRType();
-		
+		rd = rs + rt;
+		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc += 4;
 	}
 	private void sub() 
@@ -739,13 +781,19 @@ public class Simulator
 	{
 		loadIType();
 		if (rt == rs)
-			pc = pc + 4 + immedi;
+			pc = pc + 4 + immedi_signed;
+		else 
+			pc += 4;
 	}
 	private void bne()
 	{
+		//ut.println("-------------------------- >BEFORE PC = " + pc);
 		loadIType();
 		if (rt != rs)
-			pc = pc + 4 + immedi;
+			pc = pc + 4 + immedi_signed;
+		else
+			pc += 4;
+		//ut.println("-------------------------- >AFTER PC = " + pc);
 	}	
 	private void blt() 
 	{
