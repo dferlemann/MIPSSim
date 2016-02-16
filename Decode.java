@@ -61,6 +61,7 @@ public class Decode {
 		instrsAsmFunct.put("mtlo", "010011");
 		
 		instrsAsmFunct.put("xor",  "100110");
+		instrsAsmFunct.put("jalr", "001001");
 		
 		
 		instrsAsmFunct.put("syscall", "001100");
@@ -69,6 +70,7 @@ public class Decode {
 		instrsAsmOpcode.put("addi", "001000"); // Add immediate
 		instrsAsmOpcode.put("addiu","001001"); // Add immediate unsigned
 		instrsAsmOpcode.put("andi", "001100"); 
+		instrsAsmOpcode.put("xori", "001110");
 		instrsAsmOpcode.put("beq",  "000100"); // Branch if equal
 		instrsAsmOpcode.put("bne",  "000101"); // branch if not equal
 		instrsAsmOpcode.put("lbu",  "100100"); // Load byte unsigned
@@ -115,6 +117,8 @@ public class Decode {
 		instrsType.put("nor",  "logical"); // Logical nor
 		instrsType.put("or",   "logical"); // logical or
 		instrsType.put("ori",  "logical"); 
+		instrsType.put("xor",  "logical");
+		instrsType.put("xori", "logical");
 		instrsType.put("slt",  "logical"); // Set less than
 		instrsType.put("sltu", "logical"); // Set less than unsigned
 		instrsType.put("slti", "logical"); // Set less than immediate
@@ -142,11 +146,11 @@ public class Decode {
 		instrsType.put("mthi", "arithmetic");
 		instrsType.put("mtlo", "arithmetic");
 		
-		instrsType.put("xor",  "arithmetic");
         
 		// Control
 		instrsType.put("j",    "control"); // Jump
 		instrsType.put("jal",  "control"); // Jump and Link
+		instrsType.put("jalr", "control"); // Jump and Link Register
 		instrsType.put("jr",   "control"); // Jump Register
 		instrsType.put("beq",  "control"); // Branch if equal
 		instrsType.put("bne",  "control"); // branch if not equal
@@ -181,11 +185,13 @@ public class Decode {
         instrsFormatMasks.put("mtlo", instr_r);
 		
         instrsFormatMasks.put("xor",  instr_r);
+        instrsFormatMasks.put("jalr",  instr_r);
 		
         // I-type (opcodes)
         instrsFormatMasks.put("addi", instr_i); // Add immediate
         instrsFormatMasks.put("addiu",instr_i); // Add immediate unsigned
         instrsFormatMasks.put("andi", instr_i); 
+        instrsFormatMasks.put("xori", instr_i); 
         instrsFormatMasks.put("beq",  instr_i); // Branch if equal
         instrsFormatMasks.put("bne",  instr_i); // branch if not equal
         instrsFormatMasks.put("lbu",  instr_i); // Load byte unsigned

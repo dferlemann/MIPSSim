@@ -54,6 +54,11 @@ public class CUtils {
     {
     	return (short)Integer.parseInt(binStr16, 2);
     }
+    
+    public int binStr32toSignedInt(String binStr32)
+    {
+    	return (int)Long.parseLong(binStr32, 2);
+    }
 	
 	public <T, E> T getKeyByValue(Map<T, E> map, E value) 
 	{

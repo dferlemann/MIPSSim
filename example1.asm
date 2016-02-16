@@ -1,4 +1,4 @@
-instr 00400000,2
+instr 00400000,4
 #2008000a #addi $8, $0, 10
 #2009fff1 #addi $9, $0, -15
 #200a0001 #addi $10,$0, 1
@@ -27,12 +27,104 @@ instr 00400000,2
 #90240000 # next:  lbu $4, ($1)
 
 # lb test: 
-3c011001 # first: lui $1, 0x1001
-80240000 # next:  lb $4, ($1)
+#3c011001 # first: lui $1, 0x1001
+#80240000 # next:  lb $4, ($1)
+
+# sb test: 
+#3c011001 # first:  lui $1, 0x1001
+#8c260000 # second: lw $6, ($1)
+#a0260000 # third:  sb $6, ($1)
+#8c240000 # next:   lw $4, ($1)
+
+# sh test: 
+#3c011001 # first:  lui $1, 0x1001
+#8c270000 # zero:   lw $7, ($1)
+#a4270000 # third:  sh $7, ($1)
+#8c240000 # next:   lw $4, ($1)
+
+# sw test: 
+#3c011001 # first:  lui $1, 0x1001
+#8c270000 # zero:   lw $7, ($1)
+#ac270000 # third:  sw $7, ($1)
+#8c240000 # next:   lw $4, ($1)
+
+# and test:
+#3c011001 # first:  lui $1, 0x1001
+#8c270000 # zero:   lw $7, ($1)
+#8c260000 # zero:   lw $6, ($1)
+#00c72024 # and:    and $4, $6, $7
+
+# andi test:
+#3c011001 # first:  lui $1, 0x1001
+#8c260000 # zero:   lw $6, ($1)
+#30c4ffff # and:    andi $4, $6, 255
+
+# nor, or, xor test:
+#3c011001 # first:  lui $1, 0x1001
+#8c270000 # zero:   lw $7, ($1)
+#8c260000 # zero:   lw $6, ($1)
+#00c72026 # nor:    nor $4, $6, $7 #00c72027 nor, 00c72025 or, 26 xor
+
+# xori test:
+#3c011001 # first:  lui $1, 0x1001
+#8c270000 # zero:   lw $7, ($1)
+#8c260000 # zero:   lw $6, ($1)
+#38c4007b # or:    xori $4, $6, 123
+
+# slt test:
+#3c011001 # first:  lui $1, 0x1001
+#8c270000 # zero:   lw $7, ($1)
+#00e0202a # slt:    slt $4, $0, $7 (0007202a), slt $4, $7, $0 (00e0202a)
+# if reg2 < reg3, reg1 = 1
+# 0007202a should be 0 in $4
+
+# sltu test:
+#3c011001 # first:  lui $1, 0x1001
+#8c270000 # zero:   lw $7, ($1)
+#00e0202b # slt:    sltu $4, $0, $7 (0007202b), sltu $4, $7, $0 (00e0202b)
+# if reg2 < reg3, reg1 = 1
+# 0007202b should be 1 in $4
+
+# slti & sltiu test
+#3c011001 # first:  lui $1, 0x1001
+#8c270000 # zero:   lw $7, ($1)
+#280c000c  # slti $12, $0, 12 should produce 1 in $12
+#28ec0000 # slti $12, $7, 0 should produce 0 in $12 if $7 is unsigned
+#2c0cffff  # sltiu $12, $0, -1 should produce 0 because 0 < -1 is false
+#2c0c0fff # should be 1 in $12
+
+# sll & srl  & sra & srav
+#3c011001 # first:  lui $1, 0x1001
+#8c260000 # zero:   lw $6, ($1)
+#000662c0 # sll $12, $6, 11
+#000662c2 # srl $12, $6, 11  => 8f0a1d2c >> 11 => 0011e143
+#00066083 # sra $12, $6, 2  
+#00066007  # srav $12, $6, $0
+
+# div divu  2399804716/4294938378
+#3c011001 # first:  lui $1, 0x1001
+#8c260000 # zero:   lw $6, ($1)
+#94270000 # lhu $7, ($1) #
+#00c7001a # div $6, $7 #8f0a1d2c(signed)/8f0a(signed)   -1895162580/36618 = -51754.94 (0xFFFF35D6)
+#00c7001b # divu $6, $7 #8f0a1d2c(unsigned)/8f0a(unsigned)   2399804716/36618 = 65536.20 (0x10000)
+
+## mult multu mfhi mthi mflo mtlo
+#3c011001 # lui $1, 0x1001
+#80260000 # lb $6, ($1)
+#94270000 # lhu $7, ($1) 
+##94260000
+##00c70018 # mult $6, $7 
+#00c70019 # multu $6, $7
+##00003810 # mfhi $7
+##00003812 # mflo $7
+##00e00011 # mthi $7
+#00e00013 # mtlo $7
+
+
 
 data 10010000, 17
-8f,0a,1d,2c,
-00,00,00,00,
+ff,ff,1d,2c,
+12,34,56,78,
 23,00,00,00,
 00,00,00,
 00,

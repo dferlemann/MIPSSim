@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -10,6 +11,7 @@ import java.util.HashMap;
 public class Simulator 
 {
 	public boolean DEV_MODE = true;
+	private boolean EXIT = false;
 	
 	FileParser filep;
 	private Memory m;
@@ -88,7 +90,7 @@ public class Simulator
 		// Start the loop from the first instruction
 		instr_num = 0;
 		pc = Long.parseLong(startAddr, 16);
-		while(instr_num < instrContent.size())
+		while(instr_num < instrContent.size() && !EXIT)
 		{
 			// ----------------------------------------------------------------------------------------------- FETCH
 			nextInstruction = fetchInstruction(pc);
@@ -267,12 +269,24 @@ public class Simulator
 			case "jr": 		 jr(); numClkCyclesUsed += 1; break;
 			case "nor":   	nor(); numClkCyclesUsed += 1; break;
 			case "or":   	 or(); numClkCyclesUsed += 1; break;
+			case "xor":		xor(); numClkCyclesUsed += 1; break;
+			case "xori":	xori(); numClkCyclesUsed += 1; break;
 			case "slt": 	slt(); numClkCyclesUsed += 1; break;
 			case "sltu":   sltu(); numClkCyclesUsed += 1; break;
 			case "sll":   	sll(); numClkCyclesUsed += 1; break;
 			case "srl": 	srl(); numClkCyclesUsed += 1; break;
+			case "sra":     sra(); numClkCyclesUsed += 1; break;
+			case "srav":   srav(); numClkCyclesUsed += 1; break;
 			case "sub":    	sub(); numClkCyclesUsed += 1; break;
 			case "subu":   subu(); numClkCyclesUsed += 1; break;
+			case "div":    	div(); numClkCyclesUsed += 1; break;
+			case "divu":   divu(); numClkCyclesUsed += 1; break;
+			case "mult":   mult(); numClkCyclesUsed += 1; break;
+			case "multu": multu(); numClkCyclesUsed += 1; break;
+			case "mfhi" :  mfhi(); numClkCyclesUsed += 1; break;
+			case "mflo" :  mflo(); numClkCyclesUsed += 1; break;
+			case "mthi" :  mthi(); numClkCyclesUsed += 1; break;
+			case "mtlo" :  mtlo(); numClkCyclesUsed += 1; break;
 			
 			case "addi":   addi(); numClkCyclesUsed += 1; break;
 			case "addiu": addiu(); numClkCyclesUsed += 1; break;
@@ -296,6 +310,7 @@ public class Simulator
 			
 			case "j":   	  j(); numClkCyclesUsed += 1; break;
 			case "jal":   	jal(); numClkCyclesUsed += 1; break;
+			case "jalr":   jalr(); numClkCyclesUsed += 1; break;
 			case "syscall": syscall(); numClkCyclesUsed += 1; break;
 			
 			default: throw new DebugException("Error! Instruction not listed.");
@@ -342,7 +357,8 @@ public class Simulator
 	private String rtStr, rsStr, rdStr, saStr;
 	private String constStr, targetStr;
 
-	private long rt, rs, rd;
+	private long rt, rs, rd; // unsigned, because they are long
+	private int rt_signed, rs_signed, rd_signed;
 	private long target;
 	private short immedi_unsigned, immedi_signed, sa;
 	
@@ -356,6 +372,11 @@ public class Simulator
 		rt = Long.parseLong(reg.getRegValByBin(rtStr), 2) & 0xffffffff; // 32-bit value i
 		rs = Long.parseLong(reg.getRegValByBin(rsStr), 2) & 0xffffffff;
 		rd = Long.parseLong(reg.getRegValByBin(rdStr), 2) & 0xffffffff;
+		
+		rt_signed = ut.binStr32toSignedInt(reg.getRegValByBin(rtStr));
+		rs_signed = ut.binStr32toSignedInt(reg.getRegValByBin(rsStr));
+		rd_signed = ut.binStr32toSignedInt(reg.getRegValByBin(rdStr));
+		
 		sa = (short)Integer.parseInt(saStr, 2);
 		
 		if (DEV_MODE == true)
@@ -378,6 +399,10 @@ public class Simulator
 		
 		rt = Long.parseLong(reg.getRegValByBin(rtStr), 2) & 0xffffffff;
 		rs = Long.parseLong(reg.getRegValByBin(rsStr), 2) & 0xffffffff;
+		
+		rt_signed = ut.binStr32toSignedInt(reg.getRegValByBin(rtStr));
+		rs_signed = ut.binStr32toSignedInt(reg.getRegValByBin(rsStr));
+		
 		immedi_unsigned = (short)Integer.parseInt(constStr, 2);
 		immedi_signed = (short)ut.binStr16toSignedInt(constStr);
 		
@@ -487,9 +512,9 @@ public class Simulator
 	{
 		// Store the least significant byte of register Rt into memory address Rs + imm.
 		loadIType();
-		byte ls_rt = (byte)(rt & 0xffl);
-		long store = rs + immedi_unsigned;
-		m.mem.put(store, ls_rt);
+		long effectiveMemoryAddress = rs + immedi_signed;
+		byte ls_rt = (byte)(rt & 0x000000ffl);
+		m.mem.put(effectiveMemoryAddress, ls_rt);
 		pc += 4;
 	}
 	private void sh() 
@@ -498,13 +523,9 @@ public class Simulator
 		loadIType();
 		byte ls_rt1 = (byte)(rt & 0xff000000l);
 		byte ls_rt2 = (byte)(rt & 0x00ff0000l);
-		byte ls_rt3 = (byte)(rt & 0x0000ff00l);
-		byte ls_rt4 = (byte)(rt & 0x000000ffl);
-		long store = rs + immedi_unsigned;
-		m.mem.put(store,   ls_rt1);
-		m.mem.put(store+1, ls_rt2);
-		m.mem.put(store+2, ls_rt3);
-		m.mem.put(store+3, ls_rt4);
+		long effectiveMemoryAddress = rs + immedi_signed;
+		m.mem.put(effectiveMemoryAddress,   ls_rt1);
+		m.mem.put(effectiveMemoryAddress+1, ls_rt2);
 		
 		pc += 4;
 	}	
@@ -512,61 +533,54 @@ public class Simulator
 	{
 		// Store the word in register rt into memory address rs + imm.
 		loadIType();
-		byte ls_rt1 = (byte)(rt & 0xff00000000000000l);
-		byte ls_rt2 = (byte)(rt & 0x00ff000000000000l);
-		byte ls_rt3 = (byte)(rt & 0x0000ff0000000000l);
-		byte ls_rt4 = (byte)(rt & 0x000000ff00000000l);
-		byte ls_rt5 = (byte)(rt & 0x00000000ff000000l);
-		byte ls_rt6 = (byte)(rt & 0x0000000000ff0000l);
-		byte ls_rt7 = (byte)(rt & 0x000000000000ff00l);
-		byte ls_rt8 = (byte)(rt & 0x00000000000000ffl);
-		long store = rs + immedi_unsigned;
-		m.mem.put(store,   ls_rt1);
-		m.mem.put(store+1, ls_rt2);
-		m.mem.put(store+2, ls_rt3);
-		m.mem.put(store+3, ls_rt4);
-		m.mem.put(store+4, ls_rt5);
-		m.mem.put(store+5, ls_rt6);
-		m.mem.put(store+6, ls_rt7);
-		m.mem.put(store+7, ls_rt8);
+		byte ls_rt1 = (byte)((rt & 0xff000000l) >> 24);
+		byte ls_rt2 = (byte)((rt & 0x00ff0000l) >> 16);
+		byte ls_rt3 = (byte)((rt & 0x0000ff00l) >> 8);
+		byte ls_rt4 = (byte)((rt & 0x000000ffl));
+		
+		ut.println(rt);
+		ut.println(ls_rt1 + ls_rt2+ ls_rt3 + ls_rt4);
+		
+		long effectiveMemoryAddress = rs + immedi_signed;
+		m.mem.put(effectiveMemoryAddress,   ls_rt1);
+		m.mem.put(effectiveMemoryAddress+1, ls_rt2);
+		m.mem.put(effectiveMemoryAddress+2, ls_rt3);
+		m.mem.put(effectiveMemoryAddress+3, ls_rt4);
 		pc += 4;
 	}	
 	private void sc() 
 	{
 		// same like sw, but conditional upon a atomic flag. LL & SC used together.
 		// TODO: implement the flag later
+		// Store the word in register rt into memory address rs + imm.
 		loadIType();
-		byte ls_rt1 = (byte)(rt & 0xff00000000000000l);
-		byte ls_rt2 = (byte)(rt & 0x00ff000000000000l);
-		byte ls_rt3 = (byte)(rt & 0x0000ff0000000000l);
-		byte ls_rt4 = (byte)(rt & 0x000000ff00000000l);
-		byte ls_rt5 = (byte)(rt & 0x00000000ff000000l);
-		byte ls_rt6 = (byte)(rt & 0x0000000000ff0000l);
-		byte ls_rt7 = (byte)(rt & 0x000000000000ff00l);
-		byte ls_rt8 = (byte)(rt & 0x00000000000000ffl);
-		long store = rs + immedi_unsigned;
-		m.mem.put(store,   ls_rt1);
-		m.mem.put(store+1, ls_rt2);
-		m.mem.put(store+2, ls_rt3);
-		m.mem.put(store+3, ls_rt4);
-		m.mem.put(store+4, ls_rt5);
-		m.mem.put(store+5, ls_rt6);
-		m.mem.put(store+6, ls_rt7);
-		m.mem.put(store+7, ls_rt8);
+		byte ls_rt1 = (byte)((rt & 0xff000000l) >> 24);
+		byte ls_rt2 = (byte)((rt & 0x00ff0000l) >> 16);
+		byte ls_rt3 = (byte)((rt & 0x0000ff00l) >> 8);
+		byte ls_rt4 = (byte)((rt & 0x000000ffl));
+		
+		ut.println(rt);
+		ut.println(ls_rt1 + ls_rt2+ ls_rt3 + ls_rt4);
+		
+		long effectiveMemoryAddress = rs + immedi_signed;
+		m.mem.put(effectiveMemoryAddress,   ls_rt1);
+		m.mem.put(effectiveMemoryAddress+1, ls_rt2);
+		m.mem.put(effectiveMemoryAddress+2, ls_rt3);
+		m.mem.put(effectiveMemoryAddress+3, ls_rt4);
 		pc += 4;
 	}	
 	// ---------------------------------------------------------------------------------------- Logical
 	private void and() 
 	{
 		loadRType();
-		rd = rt & sa;
+		rd = rs & rt;
 		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc += 4;
 	}
 	private void andi() 
 	{
 		loadIType();
-		rt = rs & immedi_unsigned;
+		rt = rs & (immedi_unsigned & 0x0000ffffl); // zero-extended imm
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
@@ -587,26 +601,30 @@ public class Simulator
 	private void ori()
 	{
 		loadIType();
-		rt = rs | immedi_unsigned;
+		rt = rs | (immedi_unsigned & 0x0000ffff);
 		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
 	private void xor() 
 	{
 		loadRType();
-		
+		rd = rs ^ rt;
+		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc += 4;
 	}
 	private void xori() 
 	{
-		loadRType();
-		
+		loadIType();
+		rt = rs ^ (immedi_unsigned & 0x0000ffff);
+		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
 	private void slt() 
 	{
 		loadRType();
-		rd = rs < rt ? 1 : 0;
+		rd = rs_signed < rt_signed ? 1 : 0;
+		
+		
 		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc += 4;
 	}
@@ -620,15 +638,17 @@ public class Simulator
 	private void slti() 
 	{
 		loadIType();
-		rd = rs < immedi_unsigned ? 1 : 0;
-		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
+		rt = rs < immedi_signed ? 1 : 0;
+		
+		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
 	private void sltiu() 
 	{
 		loadIType();
-		rd = rs < immedi_unsigned ? 1 : 0;
-		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
+		rt = rs < immedi_unsigned ? 1 : 0;
+		
+		reg.setRegValByBin(rtStr, longToBinStr32Len(rt));
 		pc += 4;
 	}
 	private void sll()
@@ -650,13 +670,15 @@ public class Simulator
 	private void sra() 
 	{
 		loadRType();
-		
+		rd = rt_signed >> sa;
+		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc += 4;
 	}
 	private void srav() 
 	{
 		loadRType();
-		
+		rd = rt_signed >> sa;
+		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc += 4;
 	}
 	private void add() 
@@ -704,8 +726,8 @@ public class Simulator
 	private void div() 
 	{
 		loadRType();
-		reg.setLo(longToBinStr32Len(rs / rt));
-		reg.setHi(longToBinStr32Len(rs % rt));
+		reg.setLo(longToBinStr32Len( (long)(rs_signed / rt_signed)));
+		reg.setHi(longToBinStr32Len( (long)(rs_signed % rt_signed)));
 		pc += 4;
 	}
 	private void divu() 
@@ -718,39 +740,44 @@ public class Simulator
 	private void mult() 
 	{
 		loadRType();
-		rd = rs * rt;
-		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
+		rd = rs_signed * rt_signed;
+
+		reg.setHi(longToBinStr32Len( (rd & 0xffffffff00000000l) >> 32));
+		reg.setLo(longToBinStr32Len(rd & 0x00000000ffffffffl));
 		pc += 4;
 	}
 	private void multu() 
 	{
 		loadRType();
 		rd = rs * rt;
-		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
+
+		ut.println(rs + " * " + rt +" = " + rd);
+		reg.setHi(longToBinStr32Len( (rd & 0xffffffff00000000l) >> 32));
+		reg.setLo(longToBinStr32Len(rd & 0x00000000ffffffffl));
 		pc += 4;
 	}
 	private void mfhi() 
 	{
 		loadRType();
-		
+		reg.setRegValByBin(rdStr, reg.getHi());
 		pc += 4;
 	}
 	private void mflo() 
 	{
 		loadRType();
-		
+		reg.setRegValByBin(rdStr, reg.getLo());
 		pc += 4;
 	}
 	private void mthi() 
 	{
 		loadRType();
-		
+		reg.setHi(reg.getRegValByBin(rsStr));
 		pc += 4;
 	}
 	private void mtlo() 
 	{
 		loadRType();
-		
+		reg.setLo(reg.getRegValByBin(rsStr));
 		pc += 4;
 	}
 
@@ -774,7 +801,8 @@ public class Simulator
 	private void jalr() 
 	{
 		loadRType();
-		rd = pc + 4;
+		rd = pc;
+		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc = rs;
 	}
 	private void beq() 
@@ -795,33 +823,46 @@ public class Simulator
 			pc += 4;
 		//ut.println("-------------------------- >AFTER PC = " + pc);
 	}	
-	private void blt() 
-	{
-		loadRType();
-		
-		pc += 4;
-	}
-	private void bgt() 
-	{
-		loadRType();
-		
-		pc += 4;
-	}
-	private void ble() 
-	{
-		loadRType();
-		
-		pc += 4;
-	}
-	private void bge() 
-	{
-		loadRType();
-		
-		pc += 4;
-	}
+
 	private void syscall() 
 	{
-		loadRType();
+		int code = Integer.parseInt(reg.getRegValByReg("$2"), 2); // v0
+		if (code == 1) // print number
+		{
+			ut.println(ut.binStr32toSignedInt(reg.getRegValByReg("$4"))); // a0
+		}
+		
+		else if (code == 4) // print string
+		{
+			long strAddr = Long.parseLong(reg.getRegValByReg("$4"), 2);
+			
+			byte[] bytes = new byte[100];
+			Byte next = 'a';
+			
+			int i = 0;
+			while (next != '\0')
+			{
+				next = m.mem.get(strAddr + i);
+				bytes[i] = next;
+				i++;
+			}
+			
+			try 
+			{
+				String str = new String(bytes, "ASCII");
+				ut.println(str);
+			} 
+			catch (UnsupportedEncodingException e) 
+			{
+				ut.println(e.getMessage());
+				e.printStackTrace();
+			}
+		}
+		
+		else if (code == 10) // exit
+		{
+			EXIT = true;
+		}
 		
 		pc += 4;
 	}
