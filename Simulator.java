@@ -10,7 +10,7 @@ import java.util.HashMap;
  */
 public class Simulator 
 {
-	public boolean DEV_MODE = true;
+	public boolean DEV_MODE = false;
 	private boolean EXIT = false;
 	
 	FileParser filep;
@@ -23,6 +23,7 @@ public class Simulator
 	private File input_file;
 	private ArrayList<String> instrContent, dataContent;
 	private String startAddr, instrAddr, dataAddr;
+	private long endAddr;
 
 	
 	HashMap<String,InstructionFormat> instrsFmt;
@@ -32,7 +33,7 @@ public class Simulator
 							instrsType; 
 	
 	// Execution parameters
-	int instr_num;
+	int num_instr_executed;
 	private Long pc; // contain address of next instruction
 	private String nextInstruction; // contain 8 bytes hex representation of the instruction from memory
 	
@@ -47,6 +48,8 @@ public class Simulator
 	private int numInstructions_logical;
 	private int numInstructions_arithmetic;
 	private int numInstructions_control;
+	
+	String printout;
 	
 	// ================================================================================== Constructor
 	public Simulator(File file)
@@ -68,6 +71,8 @@ public class Simulator
 		numInstructions_arithmetic = 0;
 		numInstructions_control = 0;
 		
+		printout = "";
+		
 		// ---------------------------------------------------------------------------------- START
 		// Interpret the input file and store instruction and data in different array lists
 		parseFile();
@@ -88,9 +93,10 @@ public class Simulator
 		currentInstrFields = new HashMap<String, String>();
 
 		// Start the loop from the first instruction
-		instr_num = 0;
+		num_instr_executed = 0;
 		pc = Long.parseLong(startAddr, 16);
-		while(instr_num < instrContent.size() && !EXIT)
+		endAddr = Long.parseLong(startAddr, 16) + instrContent.size() * 4;
+		while(pc < endAddr && !EXIT)
 		{
 			// ----------------------------------------------------------------------------------------------- FETCH
 			nextInstruction = fetchInstruction(pc);
@@ -103,7 +109,7 @@ public class Simulator
 			
 			if(DEV_MODE) 
 			{
-				ut.println("============ INSTR #" + instr_num + " =============================");
+				ut.println("============ INSTR #" + num_instr_executed + " =============================");
 				ut.println("PC=" + String.format("%8s", Long.toHexString(pc)).replace(' ', '0'));
 				ut.println("INSTR_HEX=" + nextInstruction);
 				ut.println("INSTR_BIN=" + currentInstr_bin);
@@ -140,8 +146,6 @@ public class Simulator
 				// numInstrExecuted       numClkCyclesUsed          numInstructions_load  
 				// numInstructions_store  numInstructions_logical   numInstructions_arithmetic   numInstructions_control
 				
-				
-				
 				switch(instrsType.get(currentInstrAsmName))
 				{
 					case "load": 		udpateMetrics(0, 0, 1, 0, 0, 0, 0); break;
@@ -150,13 +154,17 @@ public class Simulator
 					case "arithmetic": 	udpateMetrics(0, 0, 0, 0, 0, 1, 0); break;
 					case "control":		udpateMetrics(0, 0, 0, 0, 0, 0, 1); break;
 					case "syscall":		udpateMetrics(0, 0, 0, 0, 0, 0, 0); break;
+					case "interrupt": break;
 					default: throw new DebugException("Error - Instruction Type not found.");
 				}
 				
 				executeInstruction();
 				
+				
 				if (DEV_MODE == true) 
 				{
+
+					ut.println("\nPC=" + pc + "        end of instr addr=" + endAddr);
 					ut.println("\nRegister Content: -------------------------------\n ");
 					reg.printAllRegisters();
 				}
@@ -170,9 +178,8 @@ public class Simulator
 				
 			}
 			
-			instr_num ++;
+			num_instr_executed ++;
 
-				
 		}
 		
 		printMetrics();
@@ -311,7 +318,7 @@ public class Simulator
 			case "j":   	  j(); numClkCyclesUsed += 1; break;
 			case "jal":   	jal(); numClkCyclesUsed += 1; break;
 			case "jalr":   jalr(); numClkCyclesUsed += 1; break;
-			case "syscall": syscall(); numClkCyclesUsed += 1; break;
+			case "syscall": syscall();  break;
 			
 			default: throw new DebugException("Error! Instruction not listed.");
 		}
@@ -348,6 +355,12 @@ public class Simulator
 		
 		ut.println("Register Content: ---------------------------------------------------");
 		reg.printAllRegisters();
+		
+		if (printout.length() != 0)
+		{
+			ut.println("SYSCALL Print out: ------------------------------------------------");
+			ut.println(printout);
+		}
 		ut.println("=====================================================================");
 		ut.println("=====================================================================");
 		ut.println("=====================================================================");
@@ -417,7 +430,7 @@ public class Simulator
 	private void loadJType()
 	{
 		targetStr = currentInstrFields.get("target"); 
-		target = Long.parseLong(reg.getRegValByBin(targetStr), 2) & 0xffffffff; 
+		target = Long.parseLong(targetStr, 2) & 0xffffffff; 
 		
 		if (DEV_MODE == true)
 		{
@@ -785,31 +798,35 @@ public class Simulator
 	private void j() 
 	{
 		loadJType();
+		//ut.println("Before PC: " + pc);
 		pc = target;
+		//ut.println("After  PC: " + pc);
 	}
 	private void jal() 
 	{
 		loadJType();
-		reg.setRegValByReg("$31", longToBinStr32Len(pc+4));
+		reg.setRegValByReg("$31", longToBinStr32Len(pc+8));
 		pc = target;
 	}
 	private void jr() 
 	{
 		loadRType();
-		pc = (long)rs;
+		pc = rs;
 	}
 	private void jalr() 
 	{
+		//ut.println("Before PC: " + pc);
 		loadRType();
-		rd = pc;
+		rd = pc+8;
 		reg.setRegValByBin(rdStr, longToBinStr32Len(rd));
 		pc = rs;
+		//ut.println("After  PC: " + pc);
 	}
 	private void beq() 
 	{
 		loadIType();
 		if (rt == rs)
-			pc = pc + 4 + immedi_signed;
+			pc = pc + (immedi_signed << 2);
 		else 
 			pc += 4;
 	}
@@ -817,8 +834,9 @@ public class Simulator
 	{
 		//ut.println("-------------------------- >BEFORE PC = " + pc);
 		loadIType();
+		//ut.println(immedi_signed + "   <<2 =" + (immedi_signed << 2));
 		if (rt != rs)
-			pc = pc + 4 + immedi_signed;
+			pc = pc + (immedi_signed << 2);
 		else
 			pc += 4;
 		//ut.println("-------------------------- >AFTER PC = " + pc);
@@ -829,7 +847,8 @@ public class Simulator
 		int code = Integer.parseInt(reg.getRegValByReg("$2"), 2); // v0
 		if (code == 1) // print number
 		{
-			ut.println(ut.binStr32toSignedInt(reg.getRegValByReg("$4"))); // a0
+			printout= Integer.toString(ut.binStr32toSignedInt(reg.getRegValByReg("$4"))); // a0
+			numClkCyclesUsed += 1;
 		}
 		
 		else if (code == 4) // print string
@@ -850,7 +869,9 @@ public class Simulator
 			try 
 			{
 				String str = new String(bytes, "ASCII");
-				ut.println(str);
+				printout = str;
+				
+				numClkCyclesUsed += 3;
 			} 
 			catch (UnsupportedEncodingException e) 
 			{
@@ -862,6 +883,8 @@ public class Simulator
 		else if (code == 10) // exit
 		{
 			EXIT = true;
+			printout = "SYSCALL EXIT";
+			numClkCyclesUsed += 1;
 		}
 		
 		pc += 4;

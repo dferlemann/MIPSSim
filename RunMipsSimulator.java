@@ -6,7 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class Debugger {
+public class RunMipsSimulator {
 	
 	
 	public static void main(String[] args)

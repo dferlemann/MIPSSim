@@ -266,20 +266,7 @@ public class Decode {
 		}
 	};
 	
-	private InstructionFormat instr_fi = new InstructionFormat() 
-	{
-		public HashMap<String, String> format(String parts)
-		{
-			HashMap<String, String> fields = new HashMap<String, String>();
-			
-			fields.put("opcode", parts.substring(0, 6));
-			fields.put("fmt", parts.substring(6, 11));
-			fields.put("ft", parts.substring(11, 16));
-			fields.put("const", parts.substring(16, 32));
-			
-			return fields;
-		}
-	};
+
 	
 	private InstructionFormat instr_syscall = new InstructionFormat() 
 	{
