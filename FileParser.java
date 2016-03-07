@@ -60,7 +60,7 @@ public class FileParser {
 	}
 	// ----------------------------------------------------------- Constructor
 	
-	public FileParser(File file)
+	public FileParser(File file) throws DebugException
 	{
 		fileContent = new ArrayList<String>(); // initialize ArrayList
 		instrContent = new ArrayList<String>();
@@ -77,6 +77,7 @@ public class FileParser {
 		{
 			println(ex);
 			ex.printStackTrace();
+			throw new DebugException("DebugException thrown from FileParser->FileParser(File file)");
 		}
 		
 	}

@@ -1,36 +1,57 @@
 
 
 import java.io.File;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class RunMipsSimulator {
 	
+	private static File file_input;
 	
 	public static void main(String[] args)
 	{
-		ArrayList<String> instrContent, dataContent;
-		String startAddr, instrAddr, dataAddr;
-		
-		if (args.length == 1) 
+		if (args.length == 1)
 		{
-			File file_input = new File(args[0]);
+			file_input = new File(args[0]);
 			
-			Simulator sim = new Simulator(file_input);
-			
-		} 
+			try {
+					Simulator sim = new Simulator(file_input);
+					
+					sim.start();
+			} 
+			catch (DebugException ex) 
+			{
+				System.out.println("Error Message:   =========================================== ");
+				System.out.println(ex.getMessage());
+				System.out.println("Stack Trace:     =========================================== ");
+				ex.printStackTrace();
+				
+				System.out.println("Test File Input: =========================================== ");
+				try 
+				{
+					FileInputStream fis = new FileInputStream(file_input);
+					int oneByte;
+					while ((oneByte = fis.read()) != -1) {
+						System.out.write(oneByte);
+						// System.out.print((char)oneByte); // could also do this
+					}
+					System.out.flush();
+					fis.close();
+				} 
+				catch (FileNotFoundException e) {
+					System.out.println("File Not Found! ");
+				}
+				catch (IOException e) {
+					System.out.println("Cannot Read from input stream! ");
+				}
+			}
+		}
 		else
 		{
-			println("Usage: Debugger <filename>");
+			System.out.println("Usage: Debugger <filename>");
 		}
 		
 		
-	}
-	
-	public static void println(Object line) 
-	{
-	    System.out.println(line);
 	}
 }

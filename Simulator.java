@@ -8,7 +8,7 @@ import java.util.HashMap;
  * Interprets the instructions
  * Executes and records the process
  */
-public class Simulator 
+public class Simulator
 {
 	public boolean DEV_MODE = false;
 	private boolean EXIT = false;
@@ -54,6 +54,11 @@ public class Simulator
 	// ================================================================================== Constructor
 	public Simulator(File file)
 	{
+		input_file = file;
+	}
+	
+	public void start() throws DebugException
+	{
 		
 		// Initializations
 		m = new Memory();
@@ -61,7 +66,6 @@ public class Simulator
 		decoder = new Decode();
 		
 		ut = new CUtils();
-		input_file = file;
 		
 		numInstrExecuted = 0;
 		numClkCyclesUsed = 0;
@@ -175,7 +179,7 @@ public class Simulator
 				ut.println(ex);
 				ut.println("Instruction: " + nextInstruction);
 				ex.printStackTrace();
-				
+				throw new DebugException("DebugException thrown from Simulator->start()");
 			}
 			
 			num_instr_executed ++;
@@ -185,7 +189,7 @@ public class Simulator
 		printMetrics();
 	}
 	
-	private void parseFile()
+	private void parseFile() throws DebugException
 	{
 		filep = new FileParser(input_file);
 		startAddr = filep.getStartAddr();
