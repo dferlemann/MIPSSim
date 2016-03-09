@@ -13,12 +13,11 @@ public class RunMipsSimulator {
 	{
 		if (args.length == 1)
 		{
-			file_input = new File(args[0]);
-			
 			try {
-					Simulator sim = new Simulator(file_input);
+				file_input = new File(args[0]);
+				Simulator sim = new Simulator(file_input);
 					
-					sim.start();
+				sim.start();
 			} 
 			catch (DebugException ex) 
 			{

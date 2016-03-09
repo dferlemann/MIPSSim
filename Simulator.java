@@ -199,50 +199,60 @@ public class Simulator
 		dataContent = filep.getDataContent();
 	}
 	
-	private void fileToMemory()
+	private void fileToMemory() throws DebugException
 	{
-		Integer text_addr = Integer.parseInt(instrAddr, 16);
-		Integer stat_data_addr = Integer.parseInt(dataAddr, 16);
-		
-		String datastr;
-		byte[] databytes = new byte[4];
-		
-		// We want it to be byte addressable
-		int i = 0;
-		long pc = text_addr;
-		while(i < instrContent.size()) //pc < (text_addr + instrContent.size()*4)
+		try
 		{
-			datastr = instrContent.get(i); // this is instruction 32-bit, 4 bytes in hex form
-			// break it down to 1 byte each element in databytes
-			// ut.println("\n========" + datastr + "\n");
+			Integer text_addr = Integer.parseInt(instrAddr, 16);
+			Integer stat_data_addr = Integer.parseInt(dataAddr, 16);
 			
-			databytes[0] = (byte)Integer.parseInt(datastr.substring(0, 2), 16);
-			databytes[1] = (byte)Integer.parseInt(datastr.substring(2, 4), 16);
-			databytes[2] = (byte)Integer.parseInt(datastr.substring(4, 6), 16);
-			databytes[3] = (byte)Integer.parseInt(datastr.substring(6, 8), 16);
+			String datastr;
+			byte[] databytes = new byte[4];
 			
-			for(byte databyte : databytes) // each address will address each byte
+			// We want it to be byte addressable
+			int i = 0;
+			long pc = text_addr;
+			while(i < instrContent.size()) //pc < (text_addr + instrContent.size()*4)
 			{
-				m.mem.put(pc, databyte);
-				//ut.println(String.format("%8s", Long.toHexString(pc)).replace(' ', '0') + " " + String.format("%2s", Integer.toHexString( m.mem.get(pc)& 0xFF) ).replace(' ', '0'));
-				pc++;
+				datastr = instrContent.get(i); // this is instruction 32-bit, 4 bytes in hex form
+				// break it down to 1 byte each element in databytes
+				// ut.println("\n========" + datastr + "\n");
+				
+				databytes[0] = (byte)Integer.parseInt(datastr.substring(0, 2), 16);
+				databytes[1] = (byte)Integer.parseInt(datastr.substring(2, 4), 16);
+				databytes[2] = (byte)Integer.parseInt(datastr.substring(4, 6), 16);
+				databytes[3] = (byte)Integer.parseInt(datastr.substring(6, 8), 16);
+				
+				for(byte databyte : databytes) // each address will address each byte
+				{
+					m.mem.put(pc, databyte);
+					//ut.println(String.format("%8s", Long.toHexString(pc)).replace(' ', '0') + " " + String.format("%2s", Integer.toHexString( m.mem.get(pc)& 0xFF) ).replace(' ', '0'));
+					pc++;
+				}
+				i++;
 			}
-			i++;
+			
+			// For data segment
+			i = 0;
+			long gp = stat_data_addr;
+			while(i < dataContent.size())
+			{
+				datastr = dataContent.get(i); // this is data 8-bit, 1 bytes in hex form
+				// break it down to 1 byte each element in databytes
+				byte databyte = (byte)Integer.parseInt(datastr, 16);
+				m.mem.put(gp, databyte);
+				//ut.println(String.format("%8s", Long.toHexString(gp)).replace(' ', '0') + " " + String.format("%2s", Integer.toHexString( m.mem.get(gp)& 0xFF) ).replace(' ', '0'));
+				gp++;
+				i++;
+			}
+		} 
+		catch(Exception ex)
+		{
+			ut.println(ex);
+			ex.printStackTrace();
+			throw new DebugException("DebugException thrown from Simulator->fileToMemory()");
 		}
 		
-		// For data segment
-		i = 0;
-		long gp = stat_data_addr;
-		while(i < dataContent.size())
-		{
-			datastr = dataContent.get(i); // this is data 8-bit, 1 bytes in hex form
-			// break it down to 1 byte each element in databytes
-			byte databyte = (byte)Integer.parseInt(datastr, 16);
-			m.mem.put(gp, databyte);
-			//ut.println(String.format("%8s", Long.toHexString(gp)).replace(' ', '0') + " " + String.format("%2s", Integer.toHexString( m.mem.get(gp)& 0xFF) ).replace(' ', '0'));
-			gp++;
-			i++;
-		}
 	}
 	
 	private String hex2binaryInstruction(String instr_hex)
