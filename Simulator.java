@@ -174,7 +174,7 @@ public class Simulator
 				}
 					
 			} 
-			catch (DebugException ex)
+			catch (Exception ex)
 			{
 				ut.println(ex);
 				ut.println("Instruction: " + nextInstruction);
@@ -812,15 +812,21 @@ public class Simulator
 	private void j() 
 	{
 		loadJType();
-		//ut.println("Before PC: " + pc);
-		pc = target;
-		//ut.println("After  PC: " + pc);
+		//ut.println("Before PC: " + String.format("%8s", Long.toHexString(pc)).replace(' ', '0'));
+		
+		// PC <-- [PC31..28] || [I25..0] || 00
+		// The new address is computed by taking the upper 4 bits of the PC, 
+		// concatenated to the 26 bit immediate value, and the lower two bits are 00, 
+		// so the address created remains word-aligned.
+		pc = ((pc & 0xf0000000) | (target << 2)) & 0xfffffffc;
+		
+		//ut.println("After  PC: " + String.format("%8s", Long.toHexString(pc)).replace(' ', '0'));
 	}
 	private void jal() 
 	{
 		loadJType();
 		reg.setRegValByReg("$31", longToBinStr32Len(pc+8));
-		pc = target;
+		pc = ((pc & 0xf0000000) | (target << 2)) & 0xfffffffc;
 	}
 	private void jr() 
 	{

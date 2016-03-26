@@ -146,7 +146,7 @@ public class FileParser {
 				startAddr = addr;
 				currentState = 0;
 			} 
-			else if (line.startsWith("data"))
+			if (line.startsWith("data"))
 			{
 				// GET THE ADDRESS
 				String addr = line.substring(5, 13);
@@ -165,7 +165,7 @@ public class FileParser {
 				currentState = 2;
 				//println(dataLength);
 			}
-			else if (line.startsWith("instr"))
+			if (line.startsWith("instr"))
 			{
 				// GET THE ADDRESS
 				String addr = line.substring(6, 14);
@@ -183,7 +183,7 @@ public class FileParser {
 				
 				currentState = 1;
 			}
-			else
+			if(!line.startsWith("instr") && !line.startsWith("data") && !line.startsWith("start"))
 			{
 				if (currentState == 1)
 				{
