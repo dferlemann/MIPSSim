@@ -51,6 +51,9 @@ public class Simulator
 	
 	String printout;
 	
+	// 
+	private int numIPC; // Average number of instruction retired per cycle
+	
 	// ================================================================================== Constructor
 	public Simulator(File file)
 	{
@@ -74,6 +77,7 @@ public class Simulator
 		numInstructions_logical = 0;
 		numInstructions_arithmetic = 0;
 		numInstructions_control = 0;
+		numIPC = 0;
 		
 		printout = "";
 		
@@ -366,6 +370,7 @@ public class Simulator
 		ut.println("Number of Logical instructions:    " + numInstructions_logical);
 		ut.println("Number of Arithmetic instructions: " + numInstructions_arithmetic);
 		ut.println("Number of Control instructions:    " + numInstructions_control);
+		ut.println("Average Number of Instructions Retired per Cycle: " + numIPC);
 		
 		ut.println("Register Content: ---------------------------------------------------");
 		reg.printAllRegisters();
